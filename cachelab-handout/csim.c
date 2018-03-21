@@ -64,7 +64,7 @@
  * @return void
  */
 
-void printUsage (char* argv[]) {
+void printUsage(char* argv[]) {
       printf("Usage: %s [-hv] -s <num> -E <num> -b <num> -t <file>\n", argv[0]);
       printf("Options:\n");
       printf("  -h         Print this help message.\n");
@@ -83,8 +83,11 @@ void printUsage (char* argv[]) {
  * @return void
  */
 
-void traceReader (char* trace_file) {
+void traceReader(char* trace_file) {
   char inputline[100];
+  char mem_type;
+  int address;
+  int size;
 
   FILE* trace_file_pointer = fopen(trace_file, "r");
 
@@ -93,11 +96,45 @@ void traceReader (char* trace_file) {
       exit(1);
   }
 
+  // Reads the first line with 'I' as memory access type
+  fgets(inputline, 100, trace_file_pointer);
+  sscanf(inputline, "%c %d,%d", mem_type, &address, &size);
+
+  // Continues reading the rest of the lines in the file
   while (fgets(inputline, 100, trace_file_pointer) != NULL) {
-      
+      sscanf(inputline, " %c %d,%d", mem_type, &address, &size);
  }
 
  fclose(trace_file_pointer);
+}
+
+/**
+ * Memory access type handler
+ * @return void
+ */
+
+void memoryTypeHandler(char mem_type, int address) {
+
+  switch(mem_type) {
+    case 'I':
+      break;
+    case 'L':
+      break;
+    case 'S':
+      break;
+    case 'M':
+      break;
+  }
+
+}
+
+/**
+ * Address deconstructor
+ * @return void
+ */
+
+void addressDeconstruct(int address) {
+  
 }
 
 int main()

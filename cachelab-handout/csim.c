@@ -134,7 +134,10 @@ void memoryTypeHandler(char mem_type, int address) {
  */
 
 void addressDeconstruct(int address) {
-  
+  struct Line {
+    char valid_bit;
+    long tag;
+  }
 }
 
 int main()

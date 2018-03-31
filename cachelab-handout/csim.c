@@ -13,51 +13,14 @@
 #include "cachelab.h"
 
 /**
- * Command-line options processor
- * @param argv command line arguments
+ * Global vars
  */
- void process_options(int argc, char* argv[]) {
-     char flagchar;
-     verbosity = 0;
-     set_bits = 0;
-     associativity = 0;
-     block_bits = 0;
-     trace_file = NULL;
-     while ((flagchar = getopt(argc,argv,"s:E:b:t:vh")) != -1) {
-       switch (flagchar) {
-         case ’s’:
-           set_bits = atoi(optarg);
-           break;
-         case ’E’:
-           associativity = atoi(optarg);
-           break;
-         case ’b’:
-           block_bits = atoi(optarg);
-           break;
-         case ’t’:
-           trace_file = optarg;
-           break;
-         case ’v’:
-           verbosity = 1;
-           break;
-         case ’h’:
-           printUsage(argv);
-           exit(0);
-         default:
-           printUsage(argv);
-           exit(1);
-       }
-     }
 
-     if (set_bits == 0 ||
-         associativity == 0 ||
-         block_bits == 0 ||
-         trace_file == NULL) {
-           printf("Missing required argument.\n");
-           printUsage(argv);
-           exit(1);
-         }
- }
+int verbosity;
+int set_bits;
+int associativity;
+int block_bits;
+char *trace_file;
 
 /**
  * Prints usage message on how to use the cache simulator
@@ -79,6 +42,53 @@ void printUsage(char* argv[]) {
 }
 
 /**
+ * Command-line options processor
+ * @param argv command line arguments
+ */
+ void process_options(int argc, char* argv[]) {
+     char flagchar;
+     verbosity = 0;
+     set_bits = 0;
+     associativity = 0;
+     block_bits = 0;
+     trace_file = NULL;
+     while ((flagchar = getopt(argc,argv,"s:E:b:t:vh")) != -1) {
+       switch (flagchar) {
+         case 's':
+           set_bits = atoi(optarg);
+           break;
+         case 'E':
+           associativity = atoi(optarg);
+           break;
+         case 'b':
+           block_bits = atoi(optarg);
+           break;
+         case 't':
+           trace_file = optarg;
+           break;
+         case 'v':
+           verbosity = 1;
+           break;
+         case 'h':
+           printUsage(argv);
+           exit(0);
+         default:
+           printUsage(argv);
+           exit(1);
+       }
+     }
+
+     if (set_bits == 0 ||
+         associativity == 0 ||
+         block_bits == 0 ||
+         trace_file == NULL) {
+           printf("Missing required argument.\n");
+           printUsage(argv);
+           exit(1);
+         }
+ }
+
+/**
  * Trace file parser
  * @return void
  */
@@ -96,16 +106,48 @@ void traceReader(char* trace_file) {
       exit(1);
   }
 
-  // Reads the first line with 'I' as memory access type
-  fgets(inputline, 100, trace_file_pointer);
-  sscanf(inputline, "%c %d,%d", mem_type, &address, &size);
-
   // Continues reading the rest of the lines in the file
   while (fgets(inputline, 100, trace_file_pointer) != NULL) {
-      sscanf(inputline, " %c %d,%d", mem_type, &address, &size);
+    if (inputline[0] != 'I') {
+      sscanf(inputline, " %c %d,%d", &mem_type, &address, &size);
+    }
  }
 
  fclose(trace_file_pointer);
+}
+
+struct Line {
+  int lru;
+  char valid_bit;
+  unsigned long int tag;
+} line;
+
+struct Set {
+  line *lines;
+} set;
+
+struct Cache {
+  set *sets;
+} cache;
+
+/**
+ * Create the cache with the proper parameters inputted as arguments
+ * @param num_sets   The total number of sets (S = 2^s)
+ * @param num_lines  The total number of lines (S * E)
+ * @param num_blocks The total number of blocks (B = 2^b)
+ */
+
+void createCache (long long num_sets, int num_lines, long long num_blocks) {
+  cache new_cache;
+  set new_set;
+  line new_line;
+  int set_index;
+  int line_index;
+
+  new_cache.sets = (set *) malloc(sizeof(set) * sets);
+
+
+
 }
 
 /**
@@ -113,7 +155,7 @@ void traceReader(char* trace_file) {
  * @return void
  */
 
-void memoryTypeHandler(char mem_type, int address) {
+void memoryTypeHandler(char *instruction) {
 
   switch(mem_type) {
     case 'I':
@@ -133,15 +175,13 @@ void memoryTypeHandler(char mem_type, int address) {
  * @return void
  */
 
-void addressDeconstruct(int address) {
-  struct Line {
-    char valid_bit;
-    long tag;
-  }
-}
+// void addressDeconstruct(int address) {
+//
+// }
 
 int main()
 {
     printSummary(0, 0, 0);
+    traceReader("traces/dave.trace");
     return 0;
 }

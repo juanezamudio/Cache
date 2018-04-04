@@ -1,4 +1,4 @@
-/* 
+/*
  * trans.c - Matrix transpose B = A^T
  *
  * Each transpose function must have a prototype of the form:
@@ -6,35 +6,106 @@
  *
  * A transpose function is evaluated by counting the number of misses
  * on a 1KB direct mapped cache with a block size of 32 bytes.
- */ 
+ *
+ * Juan Zamudio - jzamudio
+ * Errol Francis - efrancis
+ */
 #include <stdio.h>
 #include "cachelab.h"
 
 int is_transpose(int M, int N, int A[N][M], int B[M][N]);
 
-/* 
+/*
  * transpose_submit - This is the solution transpose function that you
  *     will be graded on for Part B of the assignment. Do not change
  *     the description string "Transpose submission", as the driver
  *     searches for that string to identify the transpose function to
- *     be graded. 
+ *     be graded.
  */
 char transpose_submit_desc[] = "Transpose submission";
-void transpose_submit(int M, int N, int A[N][M], int B[M][N])
-{
+void transpose_submit(int M, int N, int A[N][M], int B[M][N]) {
+	int i;
+  int j;
+  int blockRow;
+  int blockCol;
+	int diag = 0;
+	int temp = 0;
+
+	if (N == 32) {
+		for (blockCol = 0; blockCol < N; blockCol += 8) {
+			for (blockRow = 0; blockRow < N; blockRow += 8) {
+				for (i = blockRow; i < blockRow + 8; i++) {
+					for (j = blockCol; j < blockCol + 8; j++) {
+            if (i != j) {
+							B[j][i] = A[i][j];
+						} else {
+							temp = A[i][j];
+							diag = i;
+						}
+					}
+
+					if (blockRow == blockCol) {
+						B[diag][diag] = temp;
+					}
+				}
+			}
+		}
+	}
+
+  if (N == 64) {
+    for (blockCol = 0; blockCol < N; blockCol += 8) {
+			for (blockRow = 0; blockRow < N; blockRow += 8) {
+				for (i = blockRow; i < blockRow + 8 && (i < N); i++) {
+					for (j = blockCol; j < blockCol + 8 && (j < M); j++) {
+            if (i != j) {
+							B[j][i] = A[i][j];
+						} else {
+							temp = A[i][j];
+							diag = i;
+						}
+					}
+
+					if (blockRow == blockCol) {
+						B[diag][diag] = temp;
+					}
+				}
+			}
+		}
+  }
+
+  if (N == 67) {
+    for (blockCol = 0; blockCol < N; blockCol += 16) {
+			for (blockRow = 0; blockRow < N; blockRow += 16) {
+				for (i = blockRow; i < blockRow + 16 && (i < N); i++) {
+					for (j = blockCol; j < blockCol + 16 && (j < M); j++) {
+            if (i != j) {
+							B[j][i] = A[i][j];
+						} else {
+							temp = A[i][j];
+							diag = i;
+						}
+					}
+
+					if (blockRow == blockCol) {
+						B[diag][diag] = temp;
+					}
+				}
+			}
+		}
+  }
+
 }
 
-/* 
+/*
  * You can define additional transpose functions below. We've defined
- * a simple one below to help you get started. 
- */ 
+ * a simple one below to help you get started.
+ */
 
-/* 
+/*
  * trans - A simple baseline transpose function, not optimized for the cache.
  */
 char trans_desc[] = "Simple row-wise scan transpose";
-void trans(int M, int N, int A[N][M], int B[M][N])
-{
+void trans(int M, int N, int A[N][M], int B[M][N]) {
     int i, j, tmp;
 
     for (i = 0; i < N; i++) {
@@ -42,8 +113,7 @@ void trans(int M, int N, int A[N][M], int B[M][N])
             tmp = A[i][j];
             B[j][i] = tmp;
         }
-    }    
-
+    }
 }
 
 /*
@@ -56,14 +126,14 @@ void trans(int M, int N, int A[N][M], int B[M][N])
 void registerFunctions()
 {
     /* Register your solution function */
-    registerTransFunction(transpose_submit, transpose_submit_desc); 
+    registerTransFunction(transpose_submit, transpose_submit_desc);
 
     /* Register any additional transpose functions */
-    registerTransFunction(trans, trans_desc); 
+    registerTransFunction(trans, trans_desc);
 
 }
 
-/* 
+/*
  * is_transpose - This helper function checks if B is the transpose of
  *     A. You can check the correctness of your transpose by calling
  *     it before returning from the transpose function.
@@ -81,4 +151,3 @@ int is_transpose(int M, int N, int A[N][M], int B[M][N])
     }
     return 1;
 }
-
